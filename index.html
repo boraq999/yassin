@@ -5,133 +5,332 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>أسعار العملات - مصرف ليبيا المركزي</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Tajawal:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --primary: #1a5f7a;
-            --accent: #c9ae5d;
-            --bg: #f0f2f5;
+            --primary: #0f172a;
+            --accent: #fbbf24;
+            --accent-hover: #f59e0b;
+            --glass: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background-color: var(--bg);
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            background-attachment: fixed;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Elements */
+        body::before,
+        body::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.4;
+        }
+
+        body::before {
+            background: #38bdf8;
+            top: 10%;
+            left: 10%;
+            animation: move 20s infinite alternate;
+        }
+
+        body::after {
+            background: #fbbf24;
+            bottom: 10%;
+            right: 10%;
+            animation: move 25s infinite alternate-reverse;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(50px, 50px);
+            }
         }
 
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            width: 350px;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px;
+            border-radius: 32px;
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 450px;
             text-align: center;
-            border-top: 8px solid var(--primary);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            transition: transform 0.3s ease;
         }
 
-        h2 {
+        header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
             color: var(--primary);
-            margin-bottom: 25px;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
 
-        .rate-item {
-            background: #f8f9fa;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
-        .label {
-            color: #555;
-            font-weight: bold;
+        .currency-selector-wrapper {
+            background: rgba(15, 23, 42, 0.05);
+            padding: 20px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            text-align: right;
+            border: 1px solid rgba(15, 23, 42, 0.1);
         }
 
-        .price {
-            color: var(--primary);
-            font-family: monospace;
-            font-size: 1.2rem;
-            font-weight: 800;
-        }
-
-        .avg {
-            background: #e3f2fd;
-            border: 1px solid #bbdefb;
-        }
-
-        .status {
-            font-size: 0.8rem;
-            margin-top: 20px;
-            color: #888;
-        }
-
-        .currency-selector {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .currency-selector label {
+        label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-weight: 700;
             color: var(--primary);
-            font-weight: bold;
             font-size: 0.95rem;
+            padding-right: 5px;
         }
 
-        #currency-select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
+        .select-btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        select {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid transparent;
+            border-radius: 16px;
             background: white;
             color: var(--primary);
             font-size: 1rem;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230f172a'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 15px center;
+            background-size: 18px;
+            padding-left: 45px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        select:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        select:focus {
             outline: none;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2);
         }
 
-        #currency-select:hover {
-            border-color: var(--accent);
-            box-shadow: 0 2px 8px rgba(26, 95, 122, 0.2);
+        .refresh-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        #currency-select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(201, 174, 93, 0.2);
+        .refresh-btn:hover {
+            background: #1e293b;
+            transform: rotate(180deg) scale(1.05);
+        }
+
+        .refresh-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        #data-container {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            margin-bottom: 25px;
         }
 
         #currency-name {
-            color: var(--accent);
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
         }
 
+        .flag-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
 
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
+        .rate-cards {
+            display: grid;
+            gap: 15px;
+        }
+
+        .rate-card {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(15, 23, 42, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .rate-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .rate-card.highlight {
+            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            border: 1px solid var(--accent);
+        }
+
+        .card-info {
+            text-align: right;
+        }
+
+        .card-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .card-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .highlight .card-value {
+            color: #b45309;
+        }
+
+        .footer-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .source-link {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+
+        .source-link:hover {
+            color: var(--primary);
+        }
+
+        #date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            background: rgba(15, 23, 42, 0.05);
+            padding: 6px 15px;
+            border-radius: 50px;
             display: inline-block;
         }
 
-        @keyframes spin {
+        /* Loading States */
+        #loader-container {
+            padding: 40px 0;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #e2e8f0;
+            border-bottom-color: var(--accent);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
             0% {
                 transform: rotate(0deg);
             }
@@ -140,57 +339,119 @@
                 transform: rotate(360deg);
             }
         }
+
+        .loading-text {
+            margin-top: 15px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
+                border-radius: 24px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .card-value {
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 
 <body>
 
     <div class="container">
-        <h2>أسعار العملات (CBL)</h2>
+        <header>
+            <h1>مُنصّة العملات</h1>
+            <p class="subtitle">بيانات مباشرة من مصرف ليبيا المركزي</p>
+        </header>
 
-        <div class="currency-selector">
-            <label for="currency-select">اختر العملة:</label>
-            <select id="currency-select">
-                <option value="الدولار الأمريكي" selected>الدولار الأمريكي (USD)</option>
-                <option value="اليورو">اليورو (EUR)</option>
-                <option value="الجنيه الاسترليني">الجنيه الإسترليني (GBP)</option>
-                <option value="الدولار الكندي">الدولار الكندي (CAD)</option>
-                <option value="الدولار الاسترالي">الدولار الأسترالي (AUD)</option>
-                <option value="الفرنك السويسري">الفرنك السويسري (CHF)</option>
-                <option value="الين الياباني">الين الياباني (JPY)</option>
-                <option value="اليوان الصيني">اليوان الصيني (CNY)</option>
-                <option value="الدينار التونسي">الدينار التونسي (TND)</option>
-                <option value="الدرهم المغربي">الدرهم المغربي (MAD)</option>
-                <option value="الجنيه المصري">الجنيه المصري (EGP)</option>
-            </select>
-        </div>
+        <section class="currency-selector-wrapper">
+            <label for="currency-select">تغيير العُملة المروضة</label>
+            <div class="select-btn-group">
+                <select id="currency-select">
+                    <option value="الدولار الأمريكي" selected>🇺🇸 الدولار الأمريكي</option>
+                    <option value="اليورو">🇪🇺 اليورو</option>
+                    <option value="الجنيه الاسترليني">🇬🇧 الجنيه الإسترليني</option>
+                    <option value="الدولار الكندي">🇨🇦 الدولار الكندي</option>
+                    <option value="الدولار الاسترالي">🇦🇺 الدولار الأسترالي</option>
+                    <option value="الفرنك السويسري">🇨🇭 الفرنك السويسري</option>
+                    <option value="الين الياباني">🇯🇵 الين الياباني</option>
+                    <option value="اليوان الصيني">🇨🇳 اليوان الصيني</option>
+                    <option value="الدينار التونسي">🇹🇳 الدينار التونسي</option>
+                    <option value="الدرهم المغربي">🇲🇦 الدرهم المغربي</option>
+                    <option value="الجنيه المصري">🇪🇬 الجنيه المصري</option>
+                </select>
+                <button id="refresh-btn" class="refresh-btn" title="تحديث البيانات">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </section>
 
         <div id="loader-container">
-            <div class="loader"></div>
-            <p>جاري جلب البيانات من المصرف المركزي...</p>
+            <span class="loader"></span>
+            <p class="loading-text">جاري جلب آخر التحديثات...</p>
         </div>
 
         <div id="data-container" style="display: none;">
-            <h3 id="currency-name">الدولار الأمريكي</h3>
-            <div class="rate-item">
-                <span class="label">شراء:</span>
-                <span class="price" id="buy">-</span>
+            <div class="result-header">
+                <div id="currency-name">
+                    <span id="target-flag" class="flag-icon">🇺🇸</span>
+                    <span id="target-name">الدولار الأمريكي</span>
+                </div>
             </div>
-            <div class="rate-item">
-                <span class="label">بيع:</span>
-                <span class="price" id="sell">-</span>
+
+            <div class="rate-cards">
+                <div class="rate-card">
+                    <div class="card-info">
+                        <span class="card-label">Buy Rate</span>
+                        <span class="card-title">سعر الشراء</span>
+                    </div>
+                    <span class="card-value" id="buy">0.0000</span>
+                </div>
+
+                <div class="rate-card">
+                    <div class="card-info">
+                        <span class="card-label">Sell Rate</span>
+                        <span class="card-title">سعر البيع</span>
+                    </div>
+                    <span class="card-value" id="sell">0.0000</span>
+                </div>
+
+                <div class="rate-card highlight">
+                    <div class="card-info">
+                        <span class="card-label">Average</span>
+                        <span class="card-title">متوسط السعر</span>
+                    </div>
+                    <span class="card-value" id="avg">0.0000</span>
+                </div>
             </div>
-            <div class="rate-item avg">
-                <span class="label">المتوسط:</span>
-                <span class="price" id="avg">-</span>
+
+            <div class="footer-info">
+                <a href="https://cbl.gov.ly/currency-exchange-rates/" target="_blank" class="source-link">
+                    <span>عرض المصدر الرسمي</span>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                </a>
+                <span id="date"></span>
             </div>
-            <p class="status">المصدر: موقع مصرف ليبيا المركزي الرسمي</p>
-            <p class="status" id="date"></p>
         </div>
     </div>
 
     <script src="script.js"></script>
-
 
 </body>
 

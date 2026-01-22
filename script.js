@@ -1,79 +1,135 @@
+// خريطة الأعلام للعملات
+const CURRENCY_FLAGS = {
+    'الدولار الأمريكي': '🇺🇸',
+    'اليورو': '🇪🇺',
+    'الجنيه الاسترليني': '🇬🇧',
+    'الدولار الكندي': '🇨🇦',
+    'الدولار الاسترالي': '🇦🇺',
+    'الفرنك السويسري': '🇨🇭',
+    'الين الياباني': '🇯🇵',
+    'اليوان الصيني': '🇨🇳',
+    'الدينار التونسي': '🇹🇳',
+    'الدرهم المغربي': '🇲🇦',
+    'الجنيه المصري': '🇪🇬'
+};
+
+// قائمة بروكسيات بديلة للتجربة
+const PROXIES = [
+    {
+        name: 'AllOrigins',
+        getUrl: (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`
+    },
+    {
+        name: 'CodeTabs',
+        getUrl: (target) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`
+    },
+    {
+        name: 'CORS Anywhere',
+        getUrl: (target) => `https://cors-anywhere.herokuapp.com/${target}`
+    }
+];
+
 async function fetchFromCBL(selectedCurrency = 'الدولار الأمريكي') {
     const targetUrl = 'https://cbl.gov.ly/currency-exchange-rates/';
+    let lastError = null;
 
-    // سنحاول استخدام بروكسي مختلف (codetabs) فهو أحياناً أسرع وأكثر استقراراً
-    const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`;
+    // تحديث العلم في الواجهة فوراً
+    document.getElementById('target-flag').innerText = CURRENCY_FLAGS[selectedCurrency] || '🏳️';
+    document.getElementById('target-name').innerText = selectedCurrency;
 
-    try {
-        console.log("جاري محاولة الاتصال...");
-        const response = await fetch(proxyUrl);
+    for (let i = 0; i < PROXIES.length; i++) {
+        const proxy = PROXIES[i];
+        const proxyUrl = proxy.getUrl(targetUrl);
 
-        if (!response.ok) throw new Error(`خطأ في الاستجابة: ${response.status}`);
+        try {
+            console.log(`🔄 محاولة ${i + 1}: ${proxy.name}...`);
 
-        const html = await response.text();
+            const response = await fetch(proxyUrl, {
+                signal: AbortSignal.timeout(12000)
+            });
 
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const rows = doc.querySelectorAll('tr');
+            if (!response.ok) throw new Error(`Status ${response.status}`);
 
-        let currencyData = null;
+            const html = await response.text();
+            if (!html || html.length < 500) throw new Error('Invalid HTML response');
 
-        rows.forEach(row => {
-            const text = row.innerText;
-            // البحث عن العملة المحددة
-            if (text.includes(selectedCurrency)) {
-                const cols = row.querySelectorAll('td');
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const rows = doc.querySelectorAll('tr');
 
-                if (cols.length >= 6) {
-                    currencyData = {
-                        name: selectedCurrency,
-                        date: cols[0].innerText.trim(),
-                        unit: cols[2].innerText.trim(),
-                        avg: cols[3].innerText.trim(),
-                        sell: cols[4].innerText.trim(),
-                        buy: cols[5].innerText.trim()
-                    };
+            let currencyData = null;
+
+            rows.forEach(row => {
+                const text = row.innerText;
+                if (text.includes(selectedCurrency)) {
+                    const cols = row.querySelectorAll('td');
+                    if (cols.length >= 6) {
+                        currencyData = {
+                            name: selectedCurrency,
+                            date: cols[0].textContent.trim(),
+                            avg: cols[3].textContent.trim(),
+                            sell: cols[4].textContent.trim(),
+                            buy: cols[5].textContent.trim()
+                        };
+                    }
                 }
+            });
+
+            if (currencyData) {
+                updateUI(currencyData);
+                return;
+            } else {
+                throw new Error('Currency row not found');
             }
-        });
 
-        if (currencyData) {
-            console.table(currencyData);
-
-            document.getElementById('currency-name').innerText = currencyData.name;
-            document.getElementById('buy').innerText = currencyData.buy;
-            document.getElementById('sell').innerText = currencyData.sell;
-            document.getElementById('avg').innerText = currencyData.avg;
-            document.getElementById('date').innerText = "تاريخ النشرة: " + currencyData.date;
-
-            document.getElementById('loader-container').style.display = 'none';
-            document.getElementById('data-container').style.display = 'block';
-        } else {
-            throw new Error(`تعذر العثور على بيانات ${selectedCurrency} في الصفحة`);
+        } catch (error) {
+            console.warn(`❌ ${proxy.name} failed:`, error.message);
+            lastError = error;
         }
-
-    } catch (error) {
-        console.error("تفاصيل الخطأ:", error);
-        document.getElementById('loader-container').innerHTML =
-            `<p style="color:red">فشل الجلب: ${error.message}<br>
-            <small>تأكد من فتح الصفحة عبر سيرفر (Live Server) وليس كملف عادي.</small></p>
-            <button onclick="location.reload()" style="padding:5px 10px; cursor:pointer">إعادة محاولة</button>`;
     }
+
+    showError(lastError?.message);
 }
 
-// عند تحميل الصفحة، جلب الدولار الأمريكي (الافتراضي)
-window.onload = function () {
-    fetchFromCBL('الدولار الأمريكي');
+function updateUI(data) {
+    document.getElementById('buy').innerText = data.buy;
+    document.getElementById('sell').innerText = data.sell;
+    document.getElementById('avg').innerText = data.avg;
+    document.getElementById('date').innerText = "نشرة بتاريخ: " + data.date;
 
-    // إضافة مستمع للتغيير في القائمة المنسدلة
-    const currencySelect = document.getElementById('currency-select');
-    currencySelect.addEventListener('change', function () {
-        // إظهار مؤشر التحميل
-        document.getElementById('loader-container').style.display = 'block';
-        document.getElementById('data-container').style.display = 'none';
+    document.getElementById('loader-container').style.display = 'none';
+    document.getElementById('data-container').style.display = 'block';
+}
 
-        // جلب بيانات العملة الجديدة
-        const selectedCurrency = this.value;
-        fetchFromCBL(selectedCurrency);
-    });
+function showError(msg) {
+    document.getElementById('loader-container').innerHTML = `
+        <div style="background: #fef2f2; padding: 20px; border-radius: 20px; border: 1px solid #fee2e2;">
+            <p style="color: #991b1b; font-weight: 700; margin-bottom: 10px;">⚠️ فشل جلب البيانات</p>
+            <p style="color: #b91c1c; font-size: 0.85rem; margin-bottom: 15px;">${msg || 'خطأ في الاتصال بخادم المصرف المركزي'}</p>
+            <button onclick="location.reload()" style="background: #991b1b; color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600;">إعادة المحاولة</button>
+        </div>
+    `;
+}
+
+// تهيئة الأحداث
+window.onload = () => {
+    fetchFromCBL();
+
+    const select = document.getElementById('currency-select');
+    const refreshBtn = document.getElementById('refresh-btn');
+
+    select.onchange = (e) => {
+        resetUI();
+        fetchFromCBL(e.target.value);
+    };
+
+    refreshBtn.onclick = () => {
+        resetUI();
+        fetchFromCBL(select.value);
+    };
 };
+
+function resetUI() {
+    document.getElementById('loader-container').style.display = 'block';
+    document.getElementById('data-container').style.display = 'none';
+}
