@@ -64,12 +64,20 @@ async function fetchFromCBL(selectedCurrency = 'الدولار الأمريكي'
                 if (text.includes(selectedCurrency)) {
                     const cols = row.querySelectorAll('td');
                     if (cols.length >= 6) {
+                        // استخلاص الأرقام فقط وتنظيفها من الكلمات الزائدة
+                        const cleanValue = (str) => {
+                            if (!str) return '0.0000';
+                            // إزالة الكلمات العربية الشائعة التي قد تأتي من الموقع
+                            // return str.replace(/[أ-ي:]/g, '').trim();
+                            return str.replace(/[^\d.]/g, '').trim();
+                        };
+
                         currencyData = {
                             name: selectedCurrency,
-                            date: cols[0].textContent.trim(),
-                            avg: cols[3].textContent.trim(),
-                            sell: cols[4].textContent.trim(),
-                            buy: cols[5].textContent.trim()
+                            date: cols[0].textContent.trim().replace('التاريخ:', '').trim(),
+                            avg: cleanValue(cols[3].textContent),
+                            sell: cleanValue(cols[4].textContent),
+                            buy: cleanValue(cols[5].textContent)
                         };
                     }
                 }
@@ -92,41 +100,44 @@ async function fetchFromCBL(selectedCurrency = 'الدولار الأمريكي'
 }
 
 function updateUI(data) {
-    document.getElementById('buy').innerText = data.buy;
-    document.getElementById('sell').innerText = data.sell;
-    document.getElementById('avg').innerText = data.avg;
+    console.table(data);
+    // حقن النصوص مع الأرقام النظيفة لمنع التكرار
+    document.getElementById('buy').innerHTML = `<span style="font-family: 'Tajawal', sans-serif; font-size: 1.1rem; font-weight: 700; color: #94a3b8; margin-left: 8px;"></span> ${data.buy} <span style="font-size: 0.9rem; color: #94a3b8; margin-right: 4px;">د.ل</span>`;
+    document.getElementById('sell').innerHTML = `<span style="font-family: 'Tajawal', sans-serif; font-size: 1.1rem; font-weight: 700; color: #94a3b8; margin-left: 8px;"></span> ${data.sell} <span style="font-size: 0.9rem; color: #94a3b8; margin-right: 4px;">د.ل</span>`;
+    document.getElementById('avg').innerHTML = `<span style="font-family: 'Tajawal', sans-serif; font-size: 2.2rem; font-weight: 900; color: #fff; margin-left: 12px;"></span> ${data.avg} <span style="font-size: 1.4rem; color: #94a3b8; margin-right: 8px;">د.ل</span>`;
     document.getElementById('date').innerText = "نشرة بتاريخ: " + data.date;
 
     document.getElementById('loader-container').style.display = 'none';
-    document.getElementById('data-container').style.display = 'block';
+    const container = document.getElementById('data-container');
+    container.style.display = 'grid';
+    container.classList.remove('fade-in');
+    void container.offsetWidth; // force reflow
+    container.classList.add('fade-in');
 }
 
 function showError(msg) {
     document.getElementById('loader-container').innerHTML = `
-        <div style="background: #fef2f2; padding: 20px; border-radius: 20px; border: 1px solid #fee2e2;">
-            <p style="color: #991b1b; font-weight: 700; margin-bottom: 10px;">⚠️ فشل جلب البيانات</p>
-            <p style="color: #b91c1c; font-size: 0.85rem; margin-bottom: 15px;">${msg || 'خطأ في الاتصال بخادم المصرف المركزي'}</p>
-            <button onclick="location.reload()" style="background: #991b1b; color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600;">إعادة المحاولة</button>
+        <div style="background: rgba(239, 68, 68, 0.1); padding: 30px; border-radius: 24px; border: 1px solid rgba(239, 68, 68, 0.2); backdrop-filter: blur(10px);">
+            <p style="color: #fca5a5; font-weight: 700; margin-bottom: 10px; font-size: 1.2rem;">⚠️ فشل جلب البيانات</p>
+            <p style="color: #f87171; font-size: 0.9rem; margin-bottom: 20px;">${msg || 'خطأ في الاتصال بخادم المصرف المركزي'}</p>
+            <button onclick="location.reload()" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">إعادة المحاولة</button>
         </div>
     `;
 }
 
 // تهيئة الأحداث
 window.onload = () => {
-    fetchFromCBL();
-
     const select = document.getElementById('currency-select');
-    const refreshBtn = document.getElementById('refresh-btn');
 
-    select.onchange = (e) => {
-        resetUI();
-        fetchFromCBL(e.target.value);
-    };
+    // بدء الجلب بالعملة المختارة افتراضياً
+    fetchFromCBL(select ? select.value : 'الدولار الأمريكي');
 
-    refreshBtn.onclick = () => {
-        resetUI();
-        fetchFromCBL(select.value);
-    };
+    if (select) {
+        select.onchange = (e) => {
+            resetUI();
+            fetchFromCBL(e.target.value);
+        };
+    }
 };
 
 function resetUI() {
