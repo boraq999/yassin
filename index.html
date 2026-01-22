@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مباشر: سعر الدولار من مصرف ليبيا المركزي</title>
+    <style>
+        :root {
+            --primary: #1a5f7a;
+            --accent: #c9ae5d;
+            --bg: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+            border-top: 8px solid var(--primary);
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+
+        .rate-item {
+            background: #f8f9fa;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .label {
+            color: #555;
+            font-weight: bold;
+        }
+
+        .price {
+            color: var(--primary);
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .avg {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+        }
+
+        .status {
+            font-size: 0.8rem;
+            margin-top: 20px;
+            color: #888;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>سعر الدولار الآن (CBL)</h2>
+
+        <div id="loader-container">
+            <div class="loader"></div>
+            <p>جاري جلب البيانات من المصرف المركزي...</p>
+        </div>
+
+        <div id="data-container" style="display: none;">
+            <div class="rate-item">
+                <span class="label">شراء:</span>
+                <span class="price" id="buy">-</span>
+            </div>
+            <div class="rate-item">
+                <span class="label">بيع:</span>
+                <span class="price" id="sell">-</span>
+            </div>
+            <div class="rate-item avg">
+                <span class="label">المتوسط:</span>
+                <span class="price" id="avg">-</span>
+            </div>
+            <p class="status">المصدر: موقع مصرف ليبيا المركزي الرسمي</p>
+            <p class="status" id="date"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>
