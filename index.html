@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مباشر: سعر الدولار من مصرف ليبيا المركزي</title>
+    <title>أسعار العملات - مصرف ليبيا المركزي</title>
     <style>
         :root {
             --primary: #1a5f7a;
@@ -71,6 +71,56 @@
             color: #888;
         }
 
+        .currency-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .currency-selector label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        #currency-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background: white;
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        #currency-select:hover {
+            border-color: var(--accent);
+            box-shadow: 0 2px 8px rgba(26, 95, 122, 0.2);
+        }
+
+        #currency-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(201, 174, 93, 0.2);
+        }
+
+        #currency-name {
+            color: var(--accent);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid var(--primary);
@@ -96,7 +146,24 @@
 <body>
 
     <div class="container">
-        <h2>سعر الدولار الآن (CBL)</h2>
+        <h2>أسعار العملات (CBL)</h2>
+
+        <div class="currency-selector">
+            <label for="currency-select">اختر العملة:</label>
+            <select id="currency-select">
+                <option value="الدولار الأمريكي" selected>الدولار الأمريكي (USD)</option>
+                <option value="اليورو">اليورو (EUR)</option>
+                <option value="الجنيه الاسترليني">الجنيه الإسترليني (GBP)</option>
+                <option value="الدولار الكندي">الدولار الكندي (CAD)</option>
+                <option value="الدولار الاسترالي">الدولار الأسترالي (AUD)</option>
+                <option value="الفرنك السويسري">الفرنك السويسري (CHF)</option>
+                <option value="الين الياباني">الين الياباني (JPY)</option>
+                <option value="اليوان الصيني">اليوان الصيني (CNY)</option>
+                <option value="الدينار التونسي">الدينار التونسي (TND)</option>
+                <option value="الدرهم المغربي">الدرهم المغربي (MAD)</option>
+                <option value="الجنيه المصري">الجنيه المصري (EGP)</option>
+            </select>
+        </div>
 
         <div id="loader-container">
             <div class="loader"></div>
@@ -104,6 +171,7 @@
         </div>
 
         <div id="data-container" style="display: none;">
+            <h3 id="currency-name">الدولار الأمريكي</h3>
             <div class="rate-item">
                 <span class="label">شراء:</span>
                 <span class="price" id="buy">-</span>

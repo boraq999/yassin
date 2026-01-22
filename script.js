@@ -1,4 +1,4 @@
-async function fetchFromCBL() {
+async function fetchFromCBL(selectedCurrency = 'الدولار الأمريكي') {
     const targetUrl = 'https://cbl.gov.ly/currency-exchange-rates/';
 
     // سنحاول استخدام بروكسي مختلف (codetabs) فهو أحياناً أسرع وأكثر استقراراً
@@ -16,18 +16,19 @@ async function fetchFromCBL() {
         const doc = parser.parseFromString(html, 'text/html');
         const rows = doc.querySelectorAll('tr');
 
-        let usdData = null;
+        let currencyData = null;
 
         rows.forEach(row => {
             const text = row.innerText;
-            // البحث عن الدولار الأمريكي بالتحديد (وليس الأسترالي أو الكندي)
-            if (text.includes('الدولار الأمريكي') || text.includes('USD')) {
+            // البحث عن العملة المحددة
+            if (text.includes(selectedCurrency)) {
                 const cols = row.querySelectorAll('td');
-                console.log(usdData);
 
                 if (cols.length >= 6) {
-                    usdData = {
+                    currencyData = {
+                        name: selectedCurrency,
                         date: cols[0].innerText.trim(),
+                        unit: cols[2].innerText.trim(),
                         avg: cols[3].innerText.trim(),
                         sell: cols[4].innerText.trim(),
                         buy: cols[5].innerText.trim()
@@ -36,18 +37,19 @@ async function fetchFromCBL() {
             }
         });
 
-        if (usdData) {
-            console.table(usdData);
+        if (currencyData) {
+            console.table(currencyData);
 
-            document.getElementById('buy').innerText = usdData.buy;
-            document.getElementById('sell').innerText = usdData.sell;
-            document.getElementById('avg').innerText = usdData.avg;
-            document.getElementById('date').innerText = "تاريخ النشرة: " + usdData.date;
+            document.getElementById('currency-name').innerText = currencyData.name;
+            document.getElementById('buy').innerText = currencyData.buy;
+            document.getElementById('sell').innerText = currencyData.sell;
+            document.getElementById('avg').innerText = currencyData.avg;
+            document.getElementById('date').innerText = "تاريخ النشرة: " + currencyData.date;
 
             document.getElementById('loader-container').style.display = 'none';
             document.getElementById('data-container').style.display = 'block';
         } else {
-            throw new Error("تعذر العثور على جدول العملات في الصفحة");
+            throw new Error(`تعذر العثور على بيانات ${selectedCurrency} في الصفحة`);
         }
 
     } catch (error) {
@@ -59,4 +61,19 @@ async function fetchFromCBL() {
     }
 }
 
-window.onload = fetchFromCBL;
+// عند تحميل الصفحة، جلب الدولار الأمريكي (الافتراضي)
+window.onload = function () {
+    fetchFromCBL('الدولار الأمريكي');
+
+    // إضافة مستمع للتغيير في القائمة المنسدلة
+    const currencySelect = document.getElementById('currency-select');
+    currencySelect.addEventListener('change', function () {
+        // إظهار مؤشر التحميل
+        document.getElementById('loader-container').style.display = 'block';
+        document.getElementById('data-container').style.display = 'none';
+
+        // جلب بيانات العملة الجديدة
+        const selectedCurrency = this.value;
+        fetchFromCBL(selectedCurrency);
+    });
+};
