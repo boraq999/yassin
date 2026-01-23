@@ -31,73 +31,37 @@ const PROXIES = [
 ];
 
 async function fetchFromCBL(selectedCurrency = 'الدولار الأمريكي') {
-    const targetUrl = 'https://cbl.gov.ly/currency-exchange-rates/';
-    let lastError = null;
+    const apiURL = 'https://cbl-proxy.alharethalalem.workers.dev/'; // رابط الـ API الخاص بك
 
-    // تحديث العلم في الواجهة فوراً
+    // تحديث العلم والاسم فوراً
     document.getElementById('target-flag').innerText = CURRENCY_FLAGS[selectedCurrency] || '🏳️';
     document.getElementById('target-name').innerText = selectedCurrency;
 
-    for (let i = 0; i < PROXIES.length; i++) {
-        const proxy = PROXIES[i];
-        const proxyUrl = proxy.getUrl(targetUrl);
+    try {
+        console.log(`🔄 جلب البيانات من الـ API الخاص...`);
+        const response = await fetch(apiURL);
 
-        try {
-            console.log(`🔄 محاولة ${i + 1}: ${proxy.name}...`);
+        if (!response.ok) throw new Error('فشل الاتصال بالـ API');
 
-            const response = await fetch(proxyUrl, {
-                signal: AbortSignal.timeout(12000)
-            });
+        const result = await response.json();
 
-            if (!response.ok) throw new Error(`Status ${response.status}`);
-
-            const html = await response.text();
-            if (!html || html.length < 500) throw new Error('Invalid HTML response');
-
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const rows = doc.querySelectorAll('tr');
-
-            let currencyData = null;
-
-            rows.forEach(row => {
-                const text = row.innerText;
-                if (text.includes(selectedCurrency)) {
-                    const cols = row.querySelectorAll('td');
-                    if (cols.length >= 6) {
-                        // استخلاص الأرقام فقط وتنظيفها من الكلمات الزائدة
-                        const cleanValue = (str) => {
-                            if (!str) return '0.0000';
-                            // إزالة الكلمات العربية الشائعة التي قد تأتي من الموقع
-                            // return str.replace(/[أ-ي:]/g, '').trim();
-                            return str.replace(/[^\d.]/g, '').trim();
-                        };
-
-                        currencyData = {
-                            name: selectedCurrency,
-                            date: cols[0].textContent.trim().replace('التاريخ:', '').trim(),
-                            avg: cleanValue(cols[3].textContent),
-                            sell: cleanValue(cols[4].textContent),
-                            buy: cleanValue(cols[5].textContent)
-                        };
-                    }
-                }
-            });
+        if (result.status === 'success') {
+            const currencyData = result.data.find(c => c.currency.includes(selectedCurrency));
 
             if (currencyData) {
                 updateUI(currencyData);
-                return;
             } else {
-                throw new Error('Currency row not found');
+                throw new Error('العملة غير موجودة في النشرة');
             }
-
-        } catch (error) {
-            console.warn(`❌ ${proxy.name} failed:`, error.message);
-            lastError = error;
+        } else {
+            throw new Error(result.message);
         }
-    }
 
-    showError(lastError?.message);
+    } catch (error) {
+        console.warn(`❌ فشل الـ API الخاص:`, error.message);
+        // خيار احتياطي: العودة للبروكسيات العامة إذا تعطل الـ Worker
+        showError(error.message);
+    }
 }
 
 function updateUI(data) {
