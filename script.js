@@ -13,8 +13,13 @@ const CURRENCY_FLAGS = {
     'الجنيه المصري': '🇪🇬'
 };
 
-// قائمة بروكسيات بديلة للتجربة
+// قائمة البروكسيات - ضع رابط Cloudflare الخاص بك هنا كأول خيار
 const PROXIES = [
+    {
+        name: 'Cloudflare Worker (Private)',
+        // استبدل الرابط أدناه بالرابط الذي حصلت عليه من Cloudflare
+        getUrl: (target) => `https://cbl-proxy.alharethalalem.workers.dev/?url=${encodeURIComponent(target)}`
+    },
     {
         name: 'AllOrigins',
         getUrl: (target) => `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`
@@ -22,10 +27,6 @@ const PROXIES = [
     {
         name: 'CodeTabs',
         getUrl: (target) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(target)}`
-    },
-    {
-        name: 'CORS Anywhere',
-        getUrl: (target) => `https://cors-anywhere.herokuapp.com/${target}`
     }
 ];
 
